@@ -9,17 +9,17 @@ const userSchema = new Schema(
       trim: true,
       required: [true, 'Please tell us your name!']
     },
-    password: String,
-    minlength: 4,
-    required: [true, 'Please provide a password!']
-  },
+    password: {
+      type: String,
+      minlength: 4,
+      required: [true, "Please provide a password!"]
+    },
+    userEntries: [{type: Schema.Types.ObjectId, ref: 'Entry'}],
+    userTopics: [{type: Schema.Types.ObjectId, ref: 'Topic'}]
+  },  
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
     timestamps: true,
-  },
-  {
-    userEntries: [{type: Schema.Types.ObjectId, ref: 'Entry'}],
-    userTopics: [{type: Schema.Types.ObjectId, ref: 'Topic'}]
   }
 );
 
