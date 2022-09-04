@@ -1,7 +1,61 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-export default function AutProviderWrapper() {
+const AuthContext = React.createContext();
+
+export default function AuthProviderWrapper(props) {
+  const[user, setUser] = useState(null);
+  const[isLoading, setIsLoading] = useState(false);
+  const[isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const navigate = useNavigate();
+
+  const storeToken = token => {
+      localStorage.setItem('authToken', token)
+  };
+
+  const verifyStoredToken = () => {
+      const storedToken = localStorage.getItem('authToken')
+      if (storedToken) {
+          return axios.get(
+              '/api/auth/verify',
+              { headers: { Authorization: `Bearer ${storedToken}` } }
+          )
+              .then(response => {
+                  const user = response.data
+                  setUser(user)
+                  setIsLoggedIn(true)
+                  setIsLoading(false)
+              })
+              .catch(err => {
+                  setUser(null)
+                  setIsLoggedIn(false)
+                  setIsLoading(false)
+              })
+      } else {
+          setIsLoading(false)
+      }
+  }
+
+  const logoutUser = () => {
+      localStorage.removeItem('authToken')
+
+      setUser(null)
+      setIsLoggedIn(false)
+      navigate('/')
+  }
+
+  useEffect(() => {
+      verifyStoredToken()
+  }, [])
+
   return (
-    <div>auth</div>
+      <AuthContext.Provider value={{isLoggedIn, isLoading, user, storeToken, verifyStoredToken, logoutUser}} >
+          {props.children}
+      </AuthContext.Provider> 
   )
+
 }
+
+export { AuthProviderWrapper, AuthContext };
